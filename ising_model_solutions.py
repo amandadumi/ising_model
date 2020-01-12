@@ -29,6 +29,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pyblock
 
 
 
@@ -263,14 +264,29 @@ class Calculation ():
     def get_average_energy(self):
         return np.mean(self.energies_list)
     
-    def get_std_energy(self):
-        return np.std(self.energies_list)
+    def get_stderr_energy(self):
+        return npd.std(self.energies_list)/np.sqrt(self.num_sweeps)
     
     def get_average_spin(self):
         return np.mean(self.total_spin_list)
 
-    def get_std_spin(self):
-        return np.std(self.total_spin_list)
+    def get_stderr_spin(self):
+        return np.std(self.total_spin_list)/np.sqrt(self.num_sweeps)
+
+    def get_reblocked_avg_stderr_energy(self):
+            reblock_data = pyblock.blocking.reblock(np.array(self.energies_list))
+            opt = pyblock.blocking.find_optimal_block(self.num_sweeps, reblock_data)
+            reblocked_data = reblock_data[opt[0]]
+            return reblocked_data.mean, reblocked_data.std_err
+
+    def get_reblocked_avg_stderr_spin(self):
+        reblock_data = pyblock.blocking.reblock(np.array(self.total_spin_list))
+        opt = pyblock.blocking.find_optimal_block(self.num_sweeps, reblock_data)
+        if np.isnan(opt[0]):
+            return self.get_average_spin(), self.get_stderr_spin()
+        else:
+            reblocked_data = reblock_data[opt[0]]
+            return reblocked_data.mean, reblocked_data.std_err
 
     def run_calculation(self):
         for sweep in range(self.num_equil_sweeps):
@@ -279,32 +295,52 @@ class Calculation ():
             self.sweep()
             self.record_observables()
 
-a = IsingModel(10, 10, 1, h=0)
-a2 = Calculation(a, kT=1, num_sweeps=10000)
-a2.run_calculation()
+    
+
+# a = IsingModel(10, 10, 0, h=1)
+# a2 = Calculation(a, kT=1, num_sweeps=100)
+# a2.run_calculation()
+# plt.figure()
+# plt.plot(range(a2.num_sweeps), a2.energies_list,label ='E')
+# plt.plot(range(a2.num_sweeps), a2.total_spin_list,label ='S')
+# print(np.average(a2.energies_list))
+# print(np.average(a2.total_spin_list))
+# plt.legend()
+# plt.show()
+# plt.savefig('sweeps_es.png',dpi=300)
+
+def analytical(x,J):
+    analytical_solution = []
+    for i in x:
+        if i < 2.269:
+            analytical_solution.append((1-np.sinh((2*J)/i)**(-4))**(1.0/8.0))
+        else:
+            analytical_solution.append(0)
+
+    return analytical_solution
 
 
-plt.figure()
-plt.plot(range(a2.num_sweeps), a2.energies_list,label ='E')
-plt.plot(range(a2.num_sweeps), a2.total_spin_list,label ='S')
-print(np.average(a2.energies_list))
-print(np.average(a2.total_spin_list))
-plt.legend()
-plt.show()
-plt.savefig('sweeps_es.png',dpi=300)
 
-kT_list = np.arange(0.5,5.0,0.5)
+kT_list = np.arange(1.2,3.0,0.1)
+plot_kT_list = np.arange(1.0,3.0,0.001)
 avg_s_list = []
-std_s_list = []
-a = IsingModel(10, 10, 1, h=0)
+stderr_s_list = []
+n=20
+m=20
+J=1
+h=0
+s_analytical = analytical(plot_kT_list,J)
+a = IsingModel(n,m,J,h)
 for kT in kT_list:
-    a2 = Calculation(a, kT=kT, num_sweeps=1000)
+    a2 = Calculation(a, kT=kT, num_equil_sweeps=2000,num_sweeps= 1000)
     a2.run_calculation()
-    avg_s_list.append(a2.get_average_spin())
-    std_s_list.append(a2.get_std_spin())
+    mean, std_err = a2.get_reblocked_avg_stderr_spin()
+    avg_s_list.append(mean)
+    stderr_s_list.append(std_err)
 plt.figure()
-plt.errorbar(kT_list, avg_s_list,std_s_list,label ='avg S')
+plt.errorbar(kT_list, avg_s_list,stderr_s_list,label ='avg S')
+plt.plot(plot_kT_list, s_analytical,label ='analytical')
+
 plt.legend()
-plt.show()
 plt.savefig('kt_avg_s.png',dpi=300)
-                    
+plt.show()
