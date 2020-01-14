@@ -28,7 +28,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pyblock
-
+import time
 
 class IsingModel:
     """
@@ -255,7 +255,7 @@ class Calculation ():
         return np.mean(self.energies_list)
 
     def get_stderr_energy(self):
-        return npd.std(self.energies_list)/np.sqrt(self.num_sweeps)
+        return np.std(self.energies_list)/np.sqrt(self.num_sweeps)
 
     def get_average_spin(self):
         return np.mean(self.total_spin_list)
@@ -293,8 +293,8 @@ class Wolff_Calculation(Calculation):
     def __init__(self, ising_model, kT=1, num_equil_sweeps=1000, num_sweeps=1000):
          Calculation.__init__(self, ising_model, kT, num_equil_sweeps, num_sweeps)
          self.p_add = 1 - np.exp(-2*self.ising_model.J/self.kT)
-         print(self.p_add)
-         exit()
+         #print(self.p_add)
+         #exit()
 
     def sweep(self):
         # randomly choose site
@@ -413,21 +413,32 @@ stderr_s_list = []
 n=10
 m=10
 J=1
-h=0.00
+h=0.01
+num_equil_sweeps=2000
+num_sweeps = 25000
 s_analytical = analytical(plot_kT_list,J)
 a = IsingModel(n,m,J,h)
+start = time.time()
 for kT in kT_list:
-    # a2 = Calculation(a, kT=kT, num_equil_sweeps=2000,num_sweeps= 1000)
-    a2 = Wolff_Calculation(a, kT=kT, num_equil_sweeps=2000,num_sweeps= 1000)
+    print("kT = {}".format(kT))
+    a2 = Calculation(a, kT=kT, num_equil_sweeps=num_equil_sweeps,num_sweeps= num_sweeps)
+    #a2 = Wolff_Calculation(a, kT=kT, num_equil_sweeps=num_equil_sweeps,num_sweeps= num_sweeps)
     a2.run_calculation()
     mean, std_err = a2.get_reblocked_avg_stderr_spin()
     avg_s_list.append(mean)
     stderr_s_list.append(std_err)
-plt.figure()
-plt.errorbar(kT_list, avg_s_list,stderr_s_list,label ='avg S')
+    #plt.figure()
+    #plt.plot(a2.total_spin_list)
+    #plt.show()
+plt.figure(figsize=(6,6))
+plt.errorbar(kT_list, np.abs(avg_s_list),stderr_s_list,label ='avg S')
 plt.plot(plot_kT_list, s_analytical,label ='analytical')
-plt.title("n={:>02d}, m={:>02d}, J={:>4.2f}, h={:>4.2f}".format(n,m,J,h))
+plt.title("n={:>02d}, m={:>02d}, J={:>4.2f}, h={:>4.2f} samp={}".format(n,m,J,h,num_sweeps))
 
 plt.legend()
-plt.savefig('wolff_avg_s_n_{:>02d}_m_{:>02d}_J_{:>4.2f}_h_{:>4.2f}.png',dpi=300)
-plt.show()
+plt.tight_layout()
+plt.savefig('metropolis_avg_s_n_{:>02d}_m_{:>02d}_J_{:>4.2f}_h_{:>4.2f}_samples_{}.png'.format(n,m,J,h,num_sweeps),dpi=600)
+#plt.savefig('wolff_avg_s_n_{:>02d}_m_{:>02d}_J_{:>4.2f}_h_{:>4.2f}_samples_{}.png'.format(n,m,J,h,num_sweeps),dpi=600)
+#plt.show()
+
+print(time.time() - start)
