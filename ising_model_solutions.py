@@ -28,6 +28,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pyblock
+import pandas as pd
 
 
 class IsingModel:
@@ -74,9 +75,9 @@ class IsingModel:
         """
         print("\t{:d} by {:d} lattice".format((self.M, self.N)))
         print(
-            "\tJ = {: 8.6f}   (positive means a favorable interaction)".format(self.J))
-        print(
-            "\th = {: 8.6f}   (external field aligned with spins)".format(self.h))
+            "\tJ = {: 8.6f}   (positive means a favorable interaction)".format(self.J)
+        )
+        print("\th = {: 8.6f}   (external field aligned with spins)".format(self.h))
 
     def plot_lattice(self):
         """
@@ -85,27 +86,27 @@ class IsingModel:
         plt.figure()
 
         imgplot = plt.imshow(self.lattice_state)
-        imgplot.set_interpolation('none')
+        imgplot.set_interpolation("none")
 
-        plt.xticks(range(self.N))
-        plt.yticks(range(self.M))
+        plt.xticks(range(self.M))
+        plt.yticks(range(self.N))
 
-        for i in range(self.N+1):
-            plt.plot([i-0.5, i-0.5], [0-0.5, self.M-0.5], color='black')
-        for j in range(self.M+1):
-            plt.plot([0-0.5, self.N-0.5], [j-0.5, j-0.5], color='black')
+        for i in range(self.M + 1):
+            plt.plot([i - 0.5, i - 0.5], [0 - 0.5, self.N - 0.5], color="black")
+        for j in range(self.N + 1):
+            plt.plot([0 - 0.5, self.M - 0.5], [j - 0.5, j - 0.5], color="black")
 
         plt.show()
 
 
 class IsingModel(IsingModel):
     def flip_spin(self, i, j):
-       """
+        """
        Flip spin (i, j)
        i.e. -1 ---> 1
              1 ---> -1
        """
-       self.lattice_state[i, j] = - self.lattice_state[i, j]
+        self.lattice_state[i, j] = -self.lattice_state[i, j]
 
 
 # Add simple test here to make sure they are interacting with class correctly.
@@ -114,78 +115,81 @@ class IsingModel(IsingModel):
 
 
 class IsingModel(IsingModel):
-  def calculate_energy_of_site(self, i, j):
-      """
+    def calculate_energy_of_site(self, i, j):
+        """
       Calculate energy of spin (i, j)
 
       Periodic boundary conditions implemented
       """
-      spin_here = self.lattice_state[i, j]  # value of spin here
+        spin_here = self.lattice_state[i, j]  # value of spin here
 
-      # value of spin above, below, left, and right of spin (i, j)
-      # for each, if on boundary, we wrap around to the other side
-      # of the lattice for periodic boundary conditions
-      if j == 0:
-          spin_above = self.lattice_state[i, self.N - 1]
-      else:
-          spin_above = self.lattice_state[i, j - 1]
+        # value of spin above, below, left, and right of spin (i, j)
+        # for each, if on boundary, we wrap around to the other side
+        # of the lattice for periodic boundary conditions
+        if j == 0:
+            spin_above = self.lattice_state[i, self.N - 1]
+        else:
+            spin_above = self.lattice_state[i, j - 1]
 
-      if j == self.N - 1:
-          spin_below = self.lattice_state[i, 0]
-      else:
-          spin_below = self.lattice_state[i, j + 1]
+        if j == self.N - 1:
+            spin_below = self.lattice_state[i, 0]
+        else:
+            spin_below = self.lattice_state[i, j + 1]
 
-      if i == self.M - 1:
-          spin_right = self.lattice_state[0, j]
-      else:
-          spin_right = self.lattice_state[i + 1, j]
+        if i == self.M - 1:
+            spin_right = self.lattice_state[0, j]
+        else:
+            spin_right = self.lattice_state[i + 1, j]
 
-      if i == 0:
-          spin_left = self.lattice_state[self.M - 1, j]
-      else:
-          spin_left = self.lattice_state[i - 1, j]
+        if i == 0:
+            spin_left = self.lattice_state[self.M - 1, j]
+        else:
+            spin_left = self.lattice_state[i - 1, j]
 
-      return - self.h * spin_here - self.J * spin_here * (spin_above + spin_below + spin_left + spin_right)
+        return -self.h * spin_here - self.J * spin_here * (
+            spin_above + spin_below + spin_left + spin_right
+        )
 
 
 # add test here for correct behavior
 
+
 class IsingModel(IsingModel):
-  def calculate_total_spin(self):
-      """
+    def calculate_total_spin(self):
+        """
       Calculate total spin of the lattice
       """
-      return np.sum(self.lattice_state)
+        return np.sum(self.lattice_state)
 
 
 class IsingModel(IsingModel):
-  def calculate_total_spin_per_spin(self):
-      """
+    def calculate_total_spin_per_spin(self):
+        """
       Calculate total spin of the lattice
       """
-      return self.calculate_total_spin() / (self.M * self.N)
+        return self.calculate_total_spin() / (self.M * self.N)
 
 
 class IsingModel(IsingModel):
-  def calculate_total_energy(self):
-      """
+    def calculate_total_energy(self):
+        """
       Calculate total energy of the lattice
       """
-      E = 0.0
-      for i in range(self.M):
-          for j in range(self.N):
-              E += self.calculate_energy_of_site(i, j)
-      # factor of two for overcounting neighboring interactions.
-      # but then need to add back -1/2 h \sum s_i
-      return (E - (self.h * self.calculate_total_spin()))/2.0
+        E = 0.0
+        for i in range(self.M):
+            for j in range(self.N):
+                E += self.calculate_energy_of_site(i, j)
+        # factor of two for overcounting neighboring interactions.
+        # but then need to add back -1/2 h \sum s_i
+        return (E - (self.h * self.calculate_total_spin())) / 2.0
 
 
 class IsingModel(IsingModel):
-  def calculate_total_energy_per_spin(self):
-      """
+    def calculate_total_energy_per_spin(self):
+        """
       Calculate energy of lattice normalized by the number of spins
       """
-      return self.calculate_total_energy() / (self.M * self.N)
+        return self.calculate_total_energy() / (self.M * self.N)
 
 
 # # Monte Carlo Simulations
@@ -210,7 +214,8 @@ class IsingModel(IsingModel):
 #
 # theory: https://arxiv.org/pdf/0803.0217.pdf
 
-class Calculation ():
+
+class Calculation:
     def __init__(self, ising_model, kT=1, num_equil_sweeps=1000, num_sweeps=1000):
         """
         Initializing
@@ -226,13 +231,11 @@ class Calculation ():
     def sweep(self):
         for site_i in range(self.ising_model.M):
             for site_j in range(self.ising_model.N):
-                E_old = self.ising_model.calculate_energy_of_site(
-                    site_i, site_j)
+                E_old = self.ising_model.calculate_energy_of_site(site_i, site_j)
                 # flip spin i and j
                 self.ising_model.flip_spin(site_i, site_j)
                 # calculate updated energy
-                E_new = self.ising_model.calculate_energy_of_site(
-                    site_i, site_j)
+                E_new = self.ising_model.calculate_energy_of_site(site_i, site_j)
                 # Monte Carlo step
                 if np.random.random() <= np.exp(-(E_new - E_old) / self.kT):
                     # accept move
@@ -255,28 +258,36 @@ class Calculation ():
         return np.mean(self.energies_list)
 
     def get_stderr_energy(self):
-        return npd.std(self.energies_list)/np.sqrt(self.num_sweeps)
+        return npd.std(self.energies_list) / np.sqrt(self.num_sweeps)
 
     def get_average_spin(self):
         return np.mean(self.total_spin_list)
 
     def get_stderr_spin(self):
-        return np.std(self.total_spin_list)/np.sqrt(self.num_sweeps)
+        return np.std(self.total_spin_list) / np.sqrt(self.num_sweeps)
 
     def get_reblocked_avg_stderr_energy(self):
-            reblock_data = pyblock.blocking.reblock(
-                np.array(self.energies_list))
-            opt = pyblock.blocking.find_optimal_block(
-                self.num_sweeps, reblock_data)
-            reblocked_data = reblock_data[opt[0]]
-            return reblocked_data.mean, reblocked_data.std_err
+        reblock_data = pyblock.blocking.reblock(np.array(self.energies_list))
+        opt = pyblock.blocking.find_optimal_block(self.num_sweeps, reblock_data)
+        reblocked_data = reblock_data[opt[0]]
+        return reblocked_data.mean, reblocked_data.std_err
 
     def get_reblocked_avg_stderr_spin(self):
         reblock_data = pyblock.blocking.reblock(np.array(self.total_spin_list))
-        opt = pyblock.blocking.find_optimal_block(
-            self.num_sweeps, reblock_data)
+        opt = pyblock.blocking.find_optimal_block(self.num_sweeps, reblock_data)
         if np.isnan(opt[0]):
-            return self.get_average_spin(), self.get_stderr_spin()
+            # reblocked_data = reblock_data[-1]
+            # return reblocked_data.mean, reblocked_data.std_err
+            means = []
+            start = 0
+            end = len(self.total_spin_list) // 5
+
+            for i in range(4):
+                means.append(np.mean(self.total_spin_list[start:end]))
+                start = end
+                end = start + len(self.total_spin_list) // 5
+            means.append(np.mean(self.total_spin_list[end::]))
+            return np.mean(means), np.std(means) / np.sqrt(len(means))
         else:
             reblocked_data = reblock_data[opt[0]]
             return reblocked_data.mean, reblocked_data.std_err
@@ -289,6 +300,7 @@ class Calculation ():
             self.record_observables()
 
 
+'''
 class Wolff_Calculation(Calculation):
     def __init__(self, ising_model, kT=1, num_equil_sweeps=1000, num_sweeps=1000):
          Calculation.__init__(self, ising_model, kT, num_equil_sweeps, num_sweeps)
@@ -371,17 +383,17 @@ class Wolff_Calculation(Calculation):
         """
         explores all sites connected 
         """
+        pass
+'''
 
 
+# create cluster from all connected sites
 
+# repeat until no bonds are created
 
-        # create cluster from all connected sites
-        
-        # repeat until no bonds are created  
-    
-        # flip entire cluster
+# flip entire cluster
 
-        #
+#
 # a = IsingModel(10, 10, 0, h=1)
 # a2 = Calculation(a, kT=1, num_sweeps=100)
 # a2.run_calculation()
@@ -394,40 +406,84 @@ class Wolff_Calculation(Calculation):
 # plt.show()
 # plt.savefig('sweeps_es.png',dpi=300)
 
-def analytical(x,J):
+
+def analytical(x, J):
     analytical_solution = []
     for i in x:
         if i < 2.269:
-            analytical_solution.append((1-np.sinh((2*J)/i)**(-4))**(1.0/8.0))
+            analytical_solution.append(
+                (1 - np.sinh((2 * J) / i) ** (-4)) ** (1.0 / 8.0)
+            )
         else:
             analytical_solution.append(0)
 
     return analytical_solution
 
 
-
-kT_list = np.arange(1.2,3.0,0.1)
-plot_kT_list = np.arange(1.0,3.0,0.001)
+kT_list = np.arange(1.2, 3.0, 0.1)
+# kT_list = np.arange(2.24, 2.3, 0.01)
+# plot_kT_list = np.arange(2.24, 2.3, 0.001)
+plot_kT_list = np.arange(1.2, 3.0, 0.001)
 avg_s_list = []
 stderr_s_list = []
-n=10
-m=10
-J=1
-h=0.00
-s_analytical = analytical(plot_kT_list,J)
-a = IsingModel(n,m,J,h)
+n = 30
+m = 30
+J = 1
+h = 0.00
+s_analytical = analytical(plot_kT_list, J)
+a = IsingModel(n, m, J, h)
 for kT in kT_list:
-    # a2 = Calculation(a, kT=kT, num_equil_sweeps=2000,num_sweeps= 1000)
-    a2 = Wolff_Calculation(a, kT=kT, num_equil_sweeps=2000,num_sweeps= 1000)
+    print(kT)
+    a2 = Calculation(a, kT=kT, num_equil_sweeps=1000, num_sweeps=15000)
+    # a2 = Wolff_Calculation(a, kT=kT, num_equil_sweeps=2000,num_sweeps= 1000)
     a2.run_calculation()
     mean, std_err = a2.get_reblocked_avg_stderr_spin()
-    avg_s_list.append(mean)
+    avg_s_list.append(np.abs(mean))
     stderr_s_list.append(std_err)
+    s = a2.total_spin_list
+    fig, ax = plt.subplots(tight_layout=True)
+    n_bins = 25
+    ax.hist(s, bins=n_bins)
+    plt.savefig(
+        "metropolis_s_hist_T_{:4.2f}_{:>02d}_m_{:>02d}_J_{:>4.2f}_h_{:>4.2f}.png".format(
+            kT, n, m, J, h
+        ),
+        dpi=300,
+    )
+    # plt.show()
+    s = pd.Series(s)
+    print(s.autocorr())
 plt.figure()
-plt.errorbar(kT_list, avg_s_list,stderr_s_list,label ='avg S')
-plt.plot(plot_kT_list, s_analytical,label ='analytical')
-plt.title("n={:>02d}, m={:>02d}, J={:>4.2f}, h={:>4.2f}".format(n,m,J,h))
+plt.errorbar(kT_list, avg_s_list, stderr_s_list, label="avg S")
+plt.plot(plot_kT_list, s_analytical, label="analytical")
+plt.title("n={:>02d}, m={:>02d}, J={:>4.2f}, h={:>4.2f}".format(n, m, J, h))
 
 plt.legend()
-plt.savefig('wolff_avg_s_n_{:>02d}_m_{:>02d}_J_{:>4.2f}_h_{:>4.2f}.png',dpi=300)
+plt.savefig(
+    "metropolis_avg_s_n_{:>02d}_m_{:>02d}_J_{:>4.2f}_h_{:>4.2f}.png".format(n, m, J, h),
+    dpi=300,
+)
 plt.show()
+
+
+# # Generating histogram of bins for T = 2.3
+# n = 30
+# m = 30
+# J = 1
+# h = 0.00
+# a = IsingModel(n, m, J, h)
+# kT = 2.3
+# a3 = Calculation(a, kT=kT, num_equil_sweeps=2000, num_sweeps=10000)
+# a3.run_calculation()
+# s = a3.total_spin_list
+# fig, ax = plt.subplots(tight_layout=True)
+# n_bins = 25
+# ax.hist(x, bins=n_bins)
+# plt.savefig(
+#     "metropolis_s_hist_T_{:4.2f}_{:>02d}_m_{:>02d}_J_{:>4.2f}_h_{:>4.2f}.png".format(kT, n, m, J, h),
+#     dpi=300,
+# )
+# plt.show()
+
+# s = pd.Series(s)
+# s.autocorr()
