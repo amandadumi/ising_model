@@ -29,6 +29,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyblock
 import pandas as pd
+import time
 
 
 class IsingModel:
@@ -420,6 +421,7 @@ def analytical(x, J):
     return analytical_solution
 
 
+start_time = time.time()
 kT_list = np.arange(1.2, 3.0, 0.1)
 # kT_list = np.arange(2.24, 2.3, 0.01)
 # plot_kT_list = np.arange(2.24, 2.3, 0.001)
@@ -430,11 +432,13 @@ n = 30
 m = 30
 J = 1
 h = 0.00
+num_equil=1000
+num_sample=15000
 s_analytical = analytical(plot_kT_list, J)
 a = IsingModel(n, m, J, h)
 for kT in kT_list:
-    print(kT)
-    a2 = Calculation(a, kT=kT, num_equil_sweeps=1000, num_sweeps=15000)
+    print("kT={}".format(kT))
+    a2 = Calculation(a, kT=kT, num_equil_sweeps=num_equil, num_sweeps=num_sample)
     # a2 = Wolff_Calculation(a, kT=kT, num_equil_sweeps=2000,num_sweeps= 1000)
     a2.run_calculation()
     mean, std_err = a2.get_reblocked_avg_stderr_spin()
@@ -442,30 +446,36 @@ for kT in kT_list:
     stderr_s_list.append(std_err)
     s = a2.total_spin_list
     fig, ax = plt.subplots(tight_layout=True)
+    fig.set_size_inches(8,5)
     n_bins = 25
-    ax.hist(s, bins=n_bins)
+    bins = np.linspace(-1,1,n_bins)
+    ax.hist(s, bins=bins)
+    ax.set_title("kT={:>4.2f} n={:>02d}, m={:>02d}, J={:>4.2f}, h={:>4.2f} samp={}".format(kT, n, m, J, h, num_sample))
+    ax.set_xlim(-1.1,1.1)
+    plt.tight_layout()
     plt.savefig(
-        "metropolis_s_hist_T_{:4.2f}_{:>02d}_m_{:>02d}_J_{:>4.2f}_h_{:>4.2f}.png".format(
-            kT, n, m, J, h
+        "metropolis_s_hist_kT_{:4.2f}_n_{:>02d}_m_{:>02d}_J_{:>4.2f}_h_{:>4.2f}_samp_{}.png".format(
+            kT, n, m, J, h, num_sample
         ),
         dpi=300,
     )
     # plt.show()
     s = pd.Series(s)
-    print(s.autocorr())
-plt.figure()
+    print("avg s autocorr = {}".format(s.autocorr()))
+plt.figure(figsize=(8,5))
 plt.errorbar(kT_list, avg_s_list, stderr_s_list, label="avg S")
 plt.plot(plot_kT_list, s_analytical, label="analytical")
-plt.title("n={:>02d}, m={:>02d}, J={:>4.2f}, h={:>4.2f}".format(n, m, J, h))
+plt.title("n={:>02d}, m={:>02d}, J={:>4.2f}, h={:>4.2f} samp={}".format(n, m, J, h, num_sample))
 
 plt.legend()
+plt.tight_layout()
 plt.savefig(
-    "metropolis_avg_s_n_{:>02d}_m_{:>02d}_J_{:>4.2f}_h_{:>4.2f}.png".format(n, m, J, h),
+    "metropolis_avg_s_n_{:>02d}_m_{:>02d}_J_{:>4.2f}_h_{:>4.2f}_samp_{}.png".format(n, m, J, h, num_sample),
     dpi=300,
 )
-plt.show()
+#plt.show()
 
-
+print("Runtime (s) = {}".format(time.time() - start_time))
 # # Generating histogram of bins for T = 2.3
 # n = 30
 # m = 30
