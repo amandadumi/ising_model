@@ -282,12 +282,13 @@ class Calculation:
             means = []
             start = 0
             end = len(self.total_spin_list) // 5
-
             for i in range(4):
                 means.append(np.mean(self.total_spin_list[start:end]))
                 start = end
                 end = start + len(self.total_spin_list) // 5
-            means.append(np.mean(self.total_spin_list[end::]))
+                print('!!')
+                print(start,end)
+            means.append(np.mean(self.total_spin_list[start::]))
             return np.mean(means), np.std(means) / np.sqrt(len(means))
         else:
             reblocked_data = reblock_data[opt[0]]
@@ -422,18 +423,18 @@ def analytical(x, J):
 
 
 start_time = time.time()
-kT_list = np.arange(1.2, 3.0, 0.1)
+kT_list = np.arange(2.2, 2.5, 0.1)
 # kT_list = np.arange(2.24, 2.3, 0.01)
 # plot_kT_list = np.arange(2.24, 2.3, 0.001)
 plot_kT_list = np.arange(1.2, 3.0, 0.001)
 avg_s_list = []
 stderr_s_list = []
-n = 30
-m = 30
+n = 10
+m = 10
 J = 1
 h = 0.00
-num_equil=1000
-num_sample=15000
+num_equil=100
+num_sample=1500
 s_analytical = analytical(plot_kT_list, J)
 a = IsingModel(n, m, J, h)
 for kT in kT_list:
@@ -442,6 +443,8 @@ for kT in kT_list:
     # a2 = Wolff_Calculation(a, kT=kT, num_equil_sweeps=2000,num_sweeps= 1000)
     a2.run_calculation()
     mean, std_err = a2.get_reblocked_avg_stderr_spin()
+    print("kT={}    mean {}    std_err {}".format(kT,mean,std_err))
+
     avg_s_list.append(np.abs(mean))
     stderr_s_list.append(std_err)
     s = a2.total_spin_list
