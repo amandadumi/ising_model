@@ -64,7 +64,8 @@ class IsingModel:
         # The np.random.randint initializes random ints
         # but does not include the high value so this initializes a
         # matrix of -1 and 0's
-        lattice_state = np.random.randint(-1, high=1, size=(M, N))
+        # lattice_state = np.random.randint(-1, high=1, size=(M, N))
+        lattice_state = np.ones((M, N))
         # then we change all the zeros to ones so we have a
         # matrix of -1 and 1
         lattice_state[lattice_state == 0] = 1
@@ -423,18 +424,18 @@ def analytical(x, J):
 
 
 start_time = time.time()
-kT_list = np.arange(2.2, 2.5, 0.1)
+kT_list = np.arange(1.2, 3, 0.1)
 # kT_list = np.arange(2.24, 2.3, 0.01)
 # plot_kT_list = np.arange(2.24, 2.3, 0.001)
 plot_kT_list = np.arange(1.2, 3.0, 0.001)
 avg_s_list = []
 stderr_s_list = []
-n = 10
-m = 10
+n = 30
+m = 30
 J = 1
-h = 0.00
-num_equil=100
-num_sample=1500
+h = 0.01
+num_equil=1000
+num_sample=15000
 s_analytical = analytical(plot_kT_list, J)
 a = IsingModel(n, m, J, h)
 for kT in kT_list:
