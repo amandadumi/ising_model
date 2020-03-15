@@ -28,10 +28,10 @@ def print_params(ising_parameters):
     """
     Print lattice attributes
     """
-    print("\t{:d} by {:d} lattice".format(ising_parameters['M'], ising_parameters['N']))
+    print("\t{} by {} lattice".format(ising_parameters['M'], ising_parameters['N']))
     print(
-        "\tJ = {: 8.6f}   (positive means a favorable interaction)".format(ising_parameters['J']))
-    print("\th = {: 8.6f}   (external field aligned with spins)".format(ising_parameters['h']))
+        "\tJ = {}   (positive means a favorable interaction)".format(ising_parameters['J']))
+    print("\th = {}   (external field aligned with spins)".format(ising_parameters['h']))
 
 def test_calculate_energy_of_sites():
     pass
