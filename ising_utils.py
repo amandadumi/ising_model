@@ -41,7 +41,7 @@ def test_calculate_lattice_energy_per_spin():
 
 def get_reblocked_avg_stderr_energy(sr,sp):
     reblock_data = pyblock.blocking.reblock(np.array(sr['energies_list']))
-    opt = pyblock.blocking.find_optimal_block(sp['num_sweeps'], reblock_data)
+    opt = pyblock.blocking.find_optimal_block(sp['num_sample_sweeps'], reblock_data)
     if np.isnan(opt[0]):
         means = []
         start = 0
@@ -60,7 +60,7 @@ def get_reblocked_avg_stderr_energy(sr,sp):
 
 def get_reblocked_avg_stderr_spin(sr,sp):
     reblock_data = pyblock.blocking.reblock(np.array(sr['total_spin_list']))
-    opt = pyblock.blocking.find_optimal_block(sp['num_sweeps'], reblock_data)
+    opt = pyblock.blocking.find_optimal_block(sp['num_sample_sweeps'], reblock_data)
     if np.isnan(opt[0]):
         means = []
         start = 0
