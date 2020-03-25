@@ -206,7 +206,7 @@ def check_exercise_3(initialize_lattice_state, flip_spin, calculate_energy_of_si
         example_lattice = flip_spin(example_lattice,1,1)
         print_params(ip)
         plot_lattice(example_lattice)
-        correct = np.array([[-2.02, -1.02, -2.02],[-1.02,2.02,-1.02],[-2.02,-1.02,-2.02]])
+        correct = np.array([[-2.01, -1.01, -2.01],[-1.01,2.01,-1.01],[-2.01,-1.01,-2.01]])
         calculated = []
         for i in range(ip["M"]):
             for j in range(ip["N"]):
