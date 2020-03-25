@@ -220,3 +220,19 @@ def check_exercise_3(initialize_lattice_state, flip_spin, calculate_energy_of_si
         print("Test passed!")
     except:
         print("Test failed!")
+def check_exercise_4(metropolis_test):
+    # THIS IS THE TEST FOR THE FUNCTION THE STUDENTS WRITE
+    # set some parameters
+    sp = {"num_equil_sweeps": None, "num_sweeps": None, "kT": 1}
+    E_new = 0.47
+    E_old = 0.1
+    # since this function is probabilistic we will sample it ~N times 
+    # and check that we are within 3 sigma of the expected value
+    nsamp = 100000
+    # expected
+    P_accept = np.exp(-(0.47 - 0.1) / sp["kT"])
+    # calculated (metropolis_test is run nsamp times and the mean of the trues (1) and falses (0) gives the probability)
+    P_func = np.mean(np.array([metropolis_test(sp, E_new, E_old) for i in range(nsamp)]))
+    # assert it is within 3 sigma
+    assert np.abs(P_func-P_accept) <= 3*(1.0/np.sqrt(nsamp))
+
