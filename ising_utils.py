@@ -9,7 +9,7 @@ def plot_lattice(lattice_state):
     """
     plt.figure()
 
-    imgplot = plt.imshow(lattice_state)
+    imgplot = plt.imshow(lattice_state, vmin=-1, vmax=1)
     imgplot.set_interpolation('none')
 
     M = len(lattice_state[0])
@@ -32,12 +32,6 @@ def print_params(ising_parameters):
     print(
         "\tJ = {}   (positive means a favorable interaction)".format(ising_parameters['J']))
     print("\th = {}   (external field aligned with spins)".format(ising_parameters['h']))
-
-def test_calculate_energy_of_sites():
-    pass
-
-def test_calculate_lattice_energy_per_spin():
-    pass
 
 def get_reblocked_avg_stderr_energy(sr,sp):
     reblock_data = pyblock.blocking.reblock(np.array(sr['energies_list']))
@@ -74,3 +68,155 @@ def get_reblocked_avg_stderr_spin(sr,sp):
     else:
         reblocked_data = reblock_data[opt[0]]
         return reblocked_data.mean, reblocked_data.std_err
+
+def check_exercise_1(ip, lattice):
+    # hide this
+    try: 
+        ip
+        print("Check: OK")
+        print("The variable 'ip' exists.")
+    except NameError:
+        print("Check: FAILED")
+        print("The variable 'ip' is not defined.")
+    
+    try: 
+        assert type(ip) is dict
+        print("Check: OK")
+        print("The variable 'ip' is a dictionary.")
+    except:
+        print("Check: FAILED")
+        print("The variable 'ip' is not a dictionary. It has been defined as a {}".format(type(ip)))
+        
+    try: 
+        lattice
+        print("Check: OK")
+        print("The variable 'lattice' exists.")
+    except NameError:
+        print("Check: FAILED")
+        print("The variable 'lattice' is not defined.\nDid you forget to store the result of the function in a variable named 'lattice'?")
+        
+    try: 
+        assert type(lattice) is np.ndarray
+        print("Check: OK")
+        print("The variable 'lattice' is a numpy array.")
+    except:
+        print("Check: FAILED")
+        print("The variable 'lattice' is not a numpy array. It has been defined as a {}.".format(type(lattice)))
+    
+    try:
+        assert list(ip.keys()) == ["J","h","M","N"]
+        for i in ["J","h","M","N"]:
+            assert ip[i] != None
+        print("Check: OK")
+        print("The dictionary 'ip' has the right keys and they aren't 'None'.")
+    except:
+        print("Check: FAILED")
+        print("The parameters dictionary 'ip' doesn't have all of the parameters defined or at least one of them is 'None'. ['J','h','M','N']")
+        iu.print_params(ip)
+        
+    try:
+        assert ip['M'] == 5
+        assert ip['N'] == 8
+        assert ip['J'] == 2
+        assert ip['h'] == 0.01
+        print("Check: OK")
+        print("The variable 'ip' has all the right values in it.")
+    except:
+        print("Check: FAILED")
+        print("At least one of the parameters in the dictionary 'ip' is incorrect.")
+        iu.print_params(ip)
+    
+    try:
+        assert np.shape(lattice)[0] == 5
+        assert np.shape(lattice)[1] == 8
+        assert lattice.all() == 1
+        print("Check: OK")
+        print("The shape of 'lattice' is correct and is all set to 1.")
+    except:
+        print("Check: FAILED")
+        print("The shape of 'lattice' is incorrect or all values are not 1.")
+        iu.print_params(ip)
+
+def check_exercise_2(ip, example_lattice):
+    try:
+        assert ip['M'] == 3
+        assert ip['N'] == 3
+        assert ip['J'] == 1
+        assert ip['h'] == 0
+        print("Check: OK")
+        print("The variable 'ip' has all the right values in it.")
+    except:
+        print("Check: FAILED")
+        print("At least one of the parameters in the dictionary 'ip' is incorrect.")
+        iu.print_params(ip)
+    
+    try:
+        assert np.shape(example_lattice)[0] == 3
+        assert np.shape(example_lattice)[1] == 3
+        print("Check: OK")
+        print("The shape of 'lattice' is correct.")
+    except:
+        print("Check: FAILED")
+        print("The shape of 'lattice' is incorrect.")
+    
+    try:
+        assert example_lattice[0,1] == -1
+        assert example_lattice[2,2] == -1
+        print("Check: OK")
+        print("The correct spins of 'lattice' were flipped.")
+    except:
+        print("Check: FAILED")
+        print("Spins (0,1) and/or (2,2) were not flipped.")
+    
+    try:
+        assert np.sum(example_lattice) == ((ip['M']*ip['N'] )-4)
+        print("Check: OK")
+        print("No incorrect spins were flipped.")
+    except:
+        print("Check: FAILED")
+        print("Extra spins besides (0,1) and/or (2,2) were flipped!")
+
+def check_exercise_3(initialize_lattice_state, flip_spin, calculate_energy_of_site):
+    try:
+        print("Testing function with no external field")
+        ip = {"J": 1, "h": 0.0, "M": 3, "N": 3}
+        example_lattice = initialize_lattice_state(ip) 
+        example_lattice = flip_spin(example_lattice,1,1)
+        print_params(ip)
+        plot_lattice(example_lattice)
+        correct = np.array([[-2.0, -1.0, -2.0],[-1.0,2.0,-1.0],[-2.0,-1.0,-2.0]])
+        calculated = []
+        for i in range(ip["M"]):
+            for j in range(ip["N"]):
+                calculated.append(calculate_energy_of_site(example_lattice,ip,i,j))
+        calculated = np.array(calculated).reshape(ip["M"],ip["N"])
+        print("Expected:")
+        print(correct)
+        print("Calculated:")
+        print(calculated)
+        assert np.allclose(calculated, correct)
+        print("Test passed!")
+    except:
+        print("Test failed!")
+    print("")
+    try:
+        print("Testing function with an external field")
+        ip = {"J": 1, "h": 0.01, "M": 3, "N": 3}
+        example_lattice = initialize_lattice_state(ip) 
+        example_lattice = flip_spin(example_lattice,1,1)
+        print_params(ip)
+        plot_lattice(example_lattice)
+        correct = np.array([[-2.02, -1.02, -2.02],[-1.02,2.02,-1.02],[-2.02,-1.02,-2.02]])
+        calculated = []
+        for i in range(ip["M"]):
+            for j in range(ip["N"]):
+                calculated.append(calculate_energy_of_site(example_lattice,ip,i,j))
+        calculated = np.array(calculated).reshape(ip["M"],ip["N"])
+        print("Expected:")
+        print(correct)
+        print("Calculated:")
+        print(calculated)
+        assert np.allclose(calculated, correct)
+        print("Test passed!")
+    except:
+        print("Test failed!")
