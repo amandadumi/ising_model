@@ -1,4 +1,4 @@
-*.png
+metropolis*.png
 *.aux
 __pycache__/
 .ipynb_checkpoints/
